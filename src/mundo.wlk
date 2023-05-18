@@ -5,5 +5,4 @@ class Ciudad {
 class Provincia {
 	var property poblacion
 	var property ciudades = []
-	
 }

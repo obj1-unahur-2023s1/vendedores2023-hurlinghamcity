@@ -1,9 +1,9 @@
 import mundo.*
+import centro.*
 
-class VendedorFijo {
-	var property ciudad = #{}
+class Vendedor {
 	const property certificaciones = []
-	
+	var property ciudad = #{}
 	
 	method puedeTrabajar(lugar) = ciudad == lugar
 	
@@ -11,59 +11,50 @@ class VendedorFijo {
 		return 	certificaciones.any({cer => cer.esProducto()}) and 
 				!certificaciones.any({cer => cer.esProducto()}) and
 				certificaciones.size() >= 3  }
-	
+				
 	method esFirme(){	return certificaciones.sum({cer => cer.puntaje()}) >= 30	}
+	
+	method agregarCertificacion(certificado){	certificaciones.add(certificado)	}
+	
+	method certificacionPuntajeTotal(){	return certificaciones.sum( {c => c.puntaje()} )	}
+	
+	method esGenerico(){	return certificaciones.any( {c => !c.esProducto()} )	}
+	
+	method tieneAfinidadConCentro(centro) = self.puedeTrabajar(centro.ciudad())
+	
+	method cantCertificacionesProducto() = certificaciones.count( {c=>c.esProducto()} )
+}
+
+class VendedorFijo inherits Vendedor{
+	const property esPersona = true
 	
 	method esInfluyente(){return false}
 	
-	method agregarCertificacion(certificado){
-		certificaciones.add(certificado)
-	}
+	method cantCertificacionesProducto() = certificaciones.count( {c => c.esProducto()} )
 }
 
-class Viajante {
+class VendedorViajante inherits Vendedor {
 	var property prov = #{}
-	const property certificaciones = []
+	const property esPersona = true
 	
-	method puedeTrabajar(lugar){	return prov.ciudades().contains(lugar)	}
-	
-	method esVersatil(){
-		return 	certificaciones.any({cer => cer.esProducto()}) and 
-				!certificaciones.any({cer => cer.esProducto()}) and
-				certificaciones.size() >= 3  }
-					
-	method esFirme(){
-		return certificaciones.sum({cer => cer.puntaje()}) >= 30}
+	override method puedeTrabajar(ciudad) = prov.any( {p => p.ciudades() == ciudad} )
 	
 	method esInfluyente(){	return prov.sum({provincia => provincia.poblacion()}) >= 10000000	}
-	
-	method agregarCertificacion(certificado){
-		certificaciones.add(certificado)
-	}
 }
 
-class Corresponsal {
+class Corresponsal inherits Vendedor {
+	const property esPersona = false
 	var property sucursalesCiu = #{}
-	const property certificaciones = []
+
+	override method puedeTrabajar(lugar) = sucursalesCiu.contains(lugar)
 	
-	method puedeTrabajar(lugar) = sucursalesCiu.provincia().contains(lugar)
+	method esInfluyente(){	return sucursalesCiu.size() >= 5 or self.provinciasDeLasCiudades().size() >= 3	}
 	
-	method esVersatil(){
-		return 	certificaciones.any({cer => cer.esProducto()}) and 
-				certificaciones.any({cer => !cer.esProducto()}) and
-				certificaciones.size() >= 3  }
+	method provinciasDeLasCiudades(){	return sucursalesCiu.map( {lugar=> lugar.provincia()} ).asSet()	}
 	
-	method esFirme(){	return certificaciones.sum( {cer => cer.puntaje()} ) >= 30	}
-	
-	method esInfluyente(){	return sucursalesCiu.size() >= 5 or self.provinciasDeCiudades().size() >= 3	}
-	// No estaría muy seguro si la parte de asSet funcionará
-	
-	method agregarCertificacion(certificado){
-		certificaciones.add(certificado)
-	}
-	
-	method provinciasDeCiudades(){
-		return sucursalesCiu.map( {lugar=> lugar.provincia()} ).asSet()
+	override method tieneAfinidadConCentro(centro) {
+		return 	self.puedeTrabajar(centro.ciudad()) and
+				sucursalesCiu.any({c => !centro.puedeCubrir(c)})	
 	}
 }
 

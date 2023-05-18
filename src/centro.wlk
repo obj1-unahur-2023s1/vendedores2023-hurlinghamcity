@@ -1,3 +1,6 @@
+import vendedores.*
+import mundo.*
+
 class Centro {
 	const property ciudad
 	var property vendedores = []
@@ -7,18 +10,18 @@ class Centro {
 		else self.error("Este vendedor ya está en la lista")
 	}
 	
-	method vendedorEstrella(){	return vendedores.max( {vendedor => vendedor.certificaciones().puntaje()} )	}
+	method vendedorEstrella(){	return vendedores.max( {vendedor => vendedor.certificacionPuntajeTotal()} )	}
 	
 	method puedeCubrir(unaCiudad){	return vendedores.any( {vendedor => vendedor.puedeTrabajar(unaCiudad)} ) }
 	
-	method vendedoresGenericos(){	
-		return vendedores.map( {vendedor => !vendedor.certificaciones().esProducto()} )	}
-	// no sé si andaría bien
+	method vendedoresGenericos(){	return vendedores.filter( {vendedor => !vendedor.esGenerico()} )	}
 	
-	method esRobusto(){	return vendedores.filter({vendedor => vendedor.esFirme()}).size() >=3	}
+	method esRobusto() = self.vendedoresFirmes().size() >=3
 	
+	method vendedoresFirmes(){	return vendedores.filter({vendedor => vendedor.esFirme()})	}
+
 	method repartirCerticacion(certificado){
 		vendedores.forEach({vendedor => vendedor.agregarCertificacion(certificado)})	}
 	
-	
+	method tieneAfinidadConVendedor(vendedor) = vendedor.esVersatil() and vendedor.tieneAfinidadConCentro(self)
 }

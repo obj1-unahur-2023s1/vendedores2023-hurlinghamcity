@@ -50,16 +50,20 @@ class Corresponsal {
 	
 	method esVersatil(){
 		return 	certificaciones.any({cer => cer.esProducto()}) and 
-				!certificaciones.any({cer => cer.esProducto()}) and
+				certificaciones.any({cer => !cer.esProducto()}) and
 				certificaciones.size() >= 3  }
 	
 	method esFirme(){	return certificaciones.sum( {cer => cer.puntaje()} ) >= 30	}
 	
-	method esInfluyente(){	return sucursalesCiu.size() >= 5 or sucursalesCiu.asSet( {lugar=> lugar.provincia()} ) >= 3	}
+	method esInfluyente(){	return sucursalesCiu.size() >= 5 or self.provinciasDeCiudades().size() >= 3	}
 	// No estaría muy seguro si la parte de asSet funcionará
 	
 	method agregarCertificacion(certificado){
 		certificaciones.add(certificado)
+	}
+	
+	method provinciasDeCiudades(){
+		return sucursalesCiu.map( {lugar=> lugar.provincia()} ).asSet()
 	}
 }
 
